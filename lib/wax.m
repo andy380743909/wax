@@ -19,9 +19,10 @@
 #import "wax_server.h"
 #import "wax_stdlib.h"
 
-#import "lauxlib.h"
-#import "lobject.h"
-#import "lualib.h"
+#import <lua_ios/lauxlib.h>
+#import <lua_ios/lobject.h>
+//#import "lobject.h"
+#import <lua_ios/lualib.h>
 #import "wax_define.h"
 #import "wax_memory.h"
 static void addGlobals(lua_State *L);
@@ -44,11 +45,12 @@ static int waxGetInstancePointer(lua_State *L);
 static void (*wax_luaRuntimeErrorHandler)(NSString *reason, BOOL willExit);
 
 static lua_State *currentL;
-lua_State *wax_currentLuaState() {
+lua_State *wax_currentLuaState(void) {
     
-    if (!currentL) 
-        currentL = lua_open();
-    
+    if (!currentL) {
+        currentL = luaL_newstate();
+        luaL_openlibs(currentL);
+    }
     return currentL;
 }
 
@@ -72,7 +74,8 @@ int wax_panic(lua_State *L) {
     }
     NSException *e = [NSException exceptionWithName:@"wax_panic" reason:reason userInfo:nil];
     [e raise];
-	exit(EXIT_FAILURE);
+//	exit(EXIT_FAILURE);
+    return 1;
 }
 
 lua_CFunction lua_atpanic (lua_State *L, lua_CFunction panicf);
@@ -323,7 +326,7 @@ static int toobjc(lua_State *L) {
 
 
 static int exitApp(lua_State *L) {
-    exit(0);
+//    exit(0);
     return 0;
 }
 

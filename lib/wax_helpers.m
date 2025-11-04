@@ -9,7 +9,7 @@
 #import "wax_helpers.h"
 #import "wax_instance.h"
 #import "wax_struct.h"
-#import "lauxlib.h"
+#import <lua_ios/lauxlib.h>
 #import "wax_block_transfer.h"
 
 
@@ -85,21 +85,49 @@ void wax_log(int flag, NSString *format, ...) {
     }
 }
 
+//int wax_getStackTrace(lua_State *L) {
+//    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+//    if (!lua_istable(L, -1)) {
+//        lua_pop(L, 1);
+//        return 1;
+//    }
+//    
+//    lua_getfield(L, -1, "traceback");
+//    if (!lua_isfunction(L, -1)) {
+//        lua_pop(L, 2);
+//        return 1;
+//    }    
+//    lua_remove(L, -2); // Remove debug
+//    
+//    lua_call(L, 0, 1);    
+//    return 1;
+//}
+
 int wax_getStackTrace(lua_State *L) {
-    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+    // Push the global table
+    lua_pushglobaltable(L);  // new in Lua 5.2+
+    
+    // Get the debug field
+    lua_getfield(L, -1, "debug");
     if (!lua_istable(L, -1)) {
-        lua_pop(L, 1);
+        lua_pop(L, 2);  // pop debug and global table
         return 1;
     }
     
+    // Now get the traceback function
     lua_getfield(L, -1, "traceback");
     if (!lua_isfunction(L, -1)) {
-        lua_pop(L, 2);
+        lua_pop(L, 3);  // pop traceback, debug, global table
         return 1;
-    }    
-    lua_remove(L, -2); // Remove debug
+    }
     
-    lua_call(L, 0, 1);    
+    // Remove the debug table, leave the function on stack
+    lua_remove(L, -2);   // remove debug table
+    lua_remove(L, -2);   // remove global table
+    
+    // Call traceback()
+    lua_call(L, 0, 1);
+    
     return 1;
 }
 
@@ -236,7 +264,7 @@ void wax_fromInstance(lua_State *L, id instance) {
         else if ([instance isKindOfClass:[NSArray class]]) {
             lua_newtable(L);
             for (id obj in instance) {
-                int i = (int)lua_objlen(L, -1);
+                int i = (int)lua_rawlen(L, -1);
                 wax_fromInstance(L, obj);
                 lua_rawseti(L, -2, i + 1);
             }
@@ -568,7 +596,7 @@ void *wax_copyToObjc(lua_State *L, const char *typeDescription, int stackIndex, 
             }
             else {
                 void *data = (void *)lua_tostring(L, stackIndex);            
-                size_t length = lua_objlen(L, stackIndex);
+                size_t length = lua_rawlen(L, stackIndex);
                 *outsize = (int)length;
             
                 value = malloc(length);
@@ -907,26 +935,57 @@ int wax_simplifyTypeDescription(const char *in, char *out) {
     return out_index;
 }
 
+//int wax_errorFunction(lua_State *L) {
+//    wax_printStack(L);
+//    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+//    if (!lua_istable(L, -1)) {
+//        lua_pop(L, 1);
+//        return 1;
+//    }
+//    
+//    lua_getfield(L, -1, "traceback");
+//    if (!lua_isfunction(L, -1)) {
+//        lua_pop(L, 2);
+//        return 1;
+//    }    
+//    lua_remove(L, -2); // Remove debug
+//    
+//    lua_pushvalue(L, -2); // Grab the error string and place it on the stack
+//    
+//    lua_call(L, 1, 1);
+//    lua_remove(L, -2); // Remove original error string
+//    
+//    return 1;
+//}
+
 int wax_errorFunction(lua_State *L) {
     wax_printStack(L);
-    lua_getfield(L, LUA_GLOBALSINDEX, "debug");
+
+    // Push the global table
+    lua_pushglobaltable(L);
+
+    // Get debug field
+    lua_getfield(L, -1, "debug");
     if (!lua_istable(L, -1)) {
-        lua_pop(L, 1);
-        return 1;
-    }
-    
-    lua_getfield(L, -1, "traceback");
-    if (!lua_isfunction(L, -1)) {
         lua_pop(L, 2);
         return 1;
-    }    
-    lua_remove(L, -2); // Remove debug
-    
-    lua_pushvalue(L, -2); // Grab the error string and place it on the stack
-    
+    }
+
+    lua_getfield(L, -1, "traceback");
+    if (!lua_isfunction(L, -1)) {
+        lua_pop(L, 3);
+        return 1;
+    }
+
+    // Remove the debug table and global table leaving traceback function and error
+    lua_remove(L, -2); // remove debug table
+    lua_remove(L, -2); // remove global table
+
+    // Push error message (assumes it’s just below)
+    lua_pushvalue(L, -2);
     lua_call(L, 1, 1);
-    lua_remove(L, -2); // Remove original error string
-    
+
+    lua_remove(L, -2); // remove original error string
     return 1;
 }
 

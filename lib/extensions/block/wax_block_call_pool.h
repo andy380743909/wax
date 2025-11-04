@@ -7,7 +7,7 @@
 //
 
 #import "wax_define.h"
-#import "lua.h"
+#import <lua_ios/lua.h>
 #import <Foundation/Foundation.h>
 extern void *lua_call_bb(lua_State *L, int index, char typeEncoding);
 

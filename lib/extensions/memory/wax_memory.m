@@ -16,9 +16,9 @@
 #import "wax_server.h"
 #import "wax_stdlib.h"
 
-#import "lauxlib.h"
-#import "lobject.h"
-#import "lualib.h"
+#import <lua_ios/lauxlib.h>
+#import <lua_ios/lobject.h>
+#import <lua_ios/lualib.h>
 #import "wax_define.h"
 //#import <Foundation/Foundation.h>
 

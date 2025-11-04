@@ -8,8 +8,8 @@
 
 #import "wax_gc.h"
 
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 
 #import "wax.h"
 #import "wax_instance.h"

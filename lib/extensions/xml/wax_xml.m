@@ -2,8 +2,8 @@
 
 #import "wax_helpers.h"
 
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 
 #import <stdio.h>
 //if you want to use xml and this line compiled error, link binary with libxml2 and add head file search path with '${SDK_DIR}/usr/include/libxml2'
@@ -29,16 +29,35 @@ static const struct luaL_Reg functions[] = {
     {NULL, NULL}
 };
 
+//int luaopen_wax_xml(lua_State *L) {
+//    BEGIN_STACK_MODIFY(L)
+//
+//    luaL_newmetatable(L, WAX_XML_METATABLE_NAME);
+//    luaL_register(L, NULL, metaFunctions);
+//    luaL_register(L, WAX_XML_METATABLE_NAME, functions);
+//
+//    END_STACK_MODIFY(L, 0)
+//
+//    return 0;
+//}
+
 int luaopen_wax_xml(lua_State *L) {
-    BEGIN_STACK_MODIFY(L)
+    BEGIN_STACK_MODIFY(L);
 
     luaL_newmetatable(L, WAX_XML_METATABLE_NAME);
-    luaL_register(L, NULL, metaFunctions);
-    luaL_register(L, WAX_XML_METATABLE_NAME, functions);
+    // Register metamethods
+    luaL_setfuncs(L, metaFunctions, 0);
 
-    END_STACK_MODIFY(L, 0)
+    // Create module table and register its functions
+    lua_newtable(L);
+    luaL_setfuncs(L, functions, 0);
 
-    return 0;
+    // Set module table’s metatable so it gets proper methamethods
+    luaL_getmetatable(L, WAX_XML_METATABLE_NAME);
+    lua_setmetatable(L, -2);
+
+    END_STACK_MODIFY(L, 1);
+    return 1;
 }
 
 static char *appendNamespaceToName(const char *name, xmlNs *ns) {
@@ -114,7 +133,7 @@ static void createTable(lua_State *L, xmlNode *node, char *textLabel, char *attr
                     }
 
                     lua_insert(L, -2); // move the table above the new node
-                    lua_rawseti(L, -2, lua_objlen(L, -2) + 1); // ad the new node
+                    lua_rawseti(L, -2, lua_rawlen(L, -2) + 1); // ad the new node
                     lua_pop(L, 1); // remove the table array
                 }
 
@@ -144,7 +163,7 @@ static int parse(lua_State *L) {
     BEGIN_STACK_MODIFY(L);
     xmlDocPtr doc;
 
-    int xmlLength = lua_objlen(L, 1) + 1;
+    int xmlLength = lua_rawlen(L, 1) + 1;
     char *xml = alloca(xmlLength);
     strncpy(xml, luaL_checkstring(L, 1), xmlLength);
 
@@ -155,7 +174,7 @@ static int parse(lua_State *L) {
         // check for text label
         lua_getfield(L, 2, XML_DEFAULT_TEXT_LABEL);
         if (!lua_isnil(L, -1)) {
-            int length = lua_objlen(L, -1);
+            int length = lua_rawlen(L, -1);
             memset(textLabel, 0, XML_MAX_LABEL_LENGTH);
             strncpy(textLabel, luaL_checkstring(L, -1), MIN(length, XML_MAX_LABEL_LENGTH - 1));
         }
@@ -164,7 +183,7 @@ static int parse(lua_State *L) {
         // check for attrs label
         lua_getfield(L, 2, XML_DEFAULT_ATTRS_LABEL);
         if (!lua_isnil(L, -1)) {
-            int length = lua_objlen(L, -1);
+            int length = lua_rawlen(L, -1);
             memset(attrsLabel, 0, XML_MAX_LABEL_LENGTH);
             strncpy(attrsLabel, luaL_checkstring(L, -1), MIN(length, XML_MAX_LABEL_LENGTH - 1));
         }
@@ -283,7 +302,7 @@ static int generate(lua_State *L) {
         // check for text label
         lua_getfield(L, 2, XML_DEFAULT_TEXT_LABEL);
         if (!lua_isnil(L, -1)) {
-            int length = lua_objlen(L, -1);
+            int length = lua_rawlen(L, -1);
             memset(textLabel, 0, XML_MAX_LABEL_LENGTH);
             strncpy(textLabel, luaL_checkstring(L, -1), MIN(length, XML_MAX_LABEL_LENGTH - 1));
         }
@@ -292,7 +311,7 @@ static int generate(lua_State *L) {
         // check for attrs label
         lua_getfield(L, 2, XML_DEFAULT_ATTRS_LABEL);
         if (!lua_isnil(L, -1)) {
-            int length = lua_objlen(L, -1);
+            int length = lua_rawlen(L, -1);
             memset(attrsLabel, 0, XML_MAX_LABEL_LENGTH);
             strncpy(attrsLabel, luaL_checkstring(L, -1), MIN(length, XML_MAX_LABEL_LENGTH - 1));
         }

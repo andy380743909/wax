@@ -8,12 +8,13 @@
 
 #import <sqlite3.h>
 
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 
 #import "wax_sqlite.h"
 #import "wax_sqlite_operation.h"
 #import "wax_instance.h"
+#import "wax_helpers.h"
 
 static int openDB(lua_State *L);
 static int closeDB(lua_State *L);
@@ -32,11 +33,32 @@ static const struct luaL_Reg functions[] = {
     {NULL, NULL}
 };
 
-int luaopen_wax_sqlite(lua_State *L) {    
-    luaL_newmetatable(L, WAX_SQLITE_METATABLE_NAME);        
-    luaL_register(L, NULL, metaFunctions);
-    luaL_register(L, WAX_SQLITE_METATABLE_NAME, functions);    
-    
+//int luaopen_wax_sqlite(lua_State *L) {    
+//    luaL_newmetatable(L, WAX_SQLITE_METATABLE_NAME);        
+//    luaL_register(L, NULL, metaFunctions);
+//    luaL_register(L, WAX_SQLITE_METATABLE_NAME, functions);    
+//    
+//    return 1;
+//}
+
+int luaopen_wax_sqlite(lua_State *L) {
+    BEGIN_STACK_MODIFY(L);
+
+    // Create the metatable for the sqlite userdata / class
+    luaL_newmetatable(L, WAX_SQLITE_METATABLE_NAME);
+
+    // Register metamethods into the metatable
+    luaL_setfuncs(L, metaFunctions, 0);
+
+    // Create the module table and register its functions
+    lua_newtable(L);
+    luaL_setfuncs(L, functions, 0);
+
+    // Set the module table’s metatable so module inherits metamethods
+    luaL_getmetatable(L, WAX_SQLITE_METATABLE_NAME);
+    lua_setmetatable(L, -2);
+
+    END_STACK_MODIFY(L, 1);
     return 1;
 }
 
@@ -87,7 +109,8 @@ int execute(lua_State *L) {
     
     // if there is a callback, do this in an NSOperation
     if (hasCalback) {        
-        lua_getfenv(L, -1); // get operations env
+//        lua_getfenv(L, -1); // get operations env
+        lua_getuservalue(L, -1);
         lua_pushstring(L, WAX_SQLITE_CALLBACK_NAME);
         lua_pushvalue(L, 3); // Push the function callback
         lua_rawset(L, -3); // Associate the operation with the callback

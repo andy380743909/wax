@@ -7,6 +7,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 int luaopen_wax_CGContext(lua_State *L);

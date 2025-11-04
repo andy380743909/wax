@@ -10,7 +10,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 #define WAX_CLASS_METATABLE_NAME "wax.class"
 #define WAX_CLASS_INSTANCE_USERDATA_IVAR_NAME "wax_instance_userdata"

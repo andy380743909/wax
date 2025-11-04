@@ -7,7 +7,7 @@
 //  32&64都可用
 
 #import <Foundation/Foundation.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 #pragma mark call from lua
 

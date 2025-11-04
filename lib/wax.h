@@ -2,10 +2,11 @@
 //  Copyright 2009 Probably Interactive. All rights reserved.
 
 #import <Foundation/Foundation.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 #define WAX_VERSION 0.93
 
+#define WAX_SCRIPTS_DIR ""
 
 //just start wax with no script, and no extension. (can be used in swift)
 void wax_startWithNil();

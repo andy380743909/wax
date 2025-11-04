@@ -12,8 +12,8 @@
 #import "wax_instance.h"
 #import "wax_helpers.h"
 
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 
 static int __index(lua_State *L);
 static int __call(lua_State *L);
@@ -37,22 +37,46 @@ static const struct luaL_Reg Methods[] = {
     {NULL, NULL}
 };
 
+//int luaopen_wax_class(lua_State *L) {
+//    BEGIN_STACK_MODIFY(L);
+//    
+//    luaL_newmetatable(L, WAX_CLASS_METATABLE_NAME);
+//    luaL_register(L, NULL, MetaMethods);
+//    luaL_register(L, WAX_CLASS_METATABLE_NAME, Methods);
+//
+//    // Set the metatable for the module
+//    luaL_getmetatable(L, WAX_CLASS_METATABLE_NAME);
+//    lua_setmetatable(L, -2);
+//    
+//    END_STACK_MODIFY(L, 0)
+//    
+//    return 1;
+//}
+
 int luaopen_wax_class(lua_State *L) {
     BEGIN_STACK_MODIFY(L);
-    
-    luaL_newmetatable(L, WAX_CLASS_METATABLE_NAME);
-    luaL_register(L, NULL, MetaMethods);
-    luaL_register(L, WAX_CLASS_METATABLE_NAME, Methods);
 
-    // Set the metatable for the module
-    luaL_getmetatable(L, WAX_CLASS_METATABLE_NAME);
-    lua_setmetatable(L, -2);
-    
-    END_STACK_MODIFY(L, 0)
-    
+    // Create metatable for class objects
+    luaL_newmetatable(L, WAX_CLASS_METATABLE_NAME);
+
+    // For Lua 5.3+, instead of luaL_register:
+    // 1. push table of methods
+    // 2. use luaL_setfuncs to register them under the metatable
+    luaL_setfuncs(L, Methods, 0);
+
+    // If you want a separate table for metamethods:
+    luaL_setfuncs(L, MetaMethods, 0);
+
+    // Set metatable for module table
+    lua_newtable(L);                                 // create module table
+    luaL_setfuncs(L, Methods, 0);                   // register methods in module
+    luaL_getmetatable(L, WAX_CLASS_METATABLE_NAME); // push metatable
+    lua_setmetatable(L, -2);                         // set module table's metatable
+
+    END_STACK_MODIFY(L, 1);
+
     return 1;
 }
-
 
 // Finds an ObjC class
 static int __index(lua_State *L) {

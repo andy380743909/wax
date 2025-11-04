@@ -1,7 +1,7 @@
 #ifndef wax_xml
 #define wax_xml_h
 
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 #define WAX_XML_INCLUDED YES
 #define WAX_XML_METATABLE_NAME "wax.xml"

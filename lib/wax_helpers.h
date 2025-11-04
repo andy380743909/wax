@@ -12,7 +12,7 @@
 
 #import "wax_instance.h"
 #import "wax_lock.h"
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 //#define _C_ATOM     '%'
 //#define _C_VECTOR   '!'

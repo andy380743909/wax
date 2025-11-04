@@ -11,7 +11,7 @@
 #import <objc/runtime.h>
 #import <objc/message.h>
 
-#import "lua.h"
+#import <lua_ios/lua.h>
 #import "wax_define.h"
 
 #define WAX_INSTANCE_METATABLE_NAME "wax.instance"

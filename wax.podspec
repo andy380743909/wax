@@ -23,14 +23,20 @@ Pod::Spec.new do |s|
   s.platform     = :ios
 
   #  When using multiple platforms
-  s.ios.deployment_target = '4.3'
+  s.ios.deployment_target = '15'
 
-  s.source_files  = 'lib/*.{h,m}', 'lib/adaptation/*.{h,m}','lib/lua/*.{h,m,c}', 'lib/extensions/block/*.{h,m}', 'lib/extensions/capi/**/*.{h,m,c}', 'lib/extensions/CGAffine/*.{h,m}','lib/extensions/CGContext/*.{h,m}','lib/extensions/filesystem/*.{h,m}' ,'lib/extensions/HTTP/*.{h,m}','lib/extensions/ivar/*.{h,m}','lib/extensions/json/**/**/*.{h,m,c}','lib/extensions/memory/*.{h,m,c}','lib/extensions/SQLite/**/*.{h,m}','lib/extensions/xml/**/*.{h,m}'
+#  s.source_files  = 'lib/*.{h,m}', 'lib/adaptation/*.{h,m}','lib/lua/*.{h,m,c}', 'lib/extensions/block/*.{h,m}', 'lib/extensions/capi/**/*.{h,m,c}', 'lib/extensions/CGAffine/*.{h,m}','lib/extensions/CGContext/*.{h,m}','lib/extensions/filesystem/*.{h,m}' ,'lib/extensions/HTTP/*.{h,m}','lib/extensions/ivar/*.{h,m}','lib/extensions/json/**/**/*.{h,m,c}','lib/extensions/memory/*.{h,m,c}','lib/extensions/SQLite/**/*.{h,m}','lib/extensions/xml/**/*.{h,m}'
 
-  s.public_header_files = 'lib/wax.h','lib/lua/lua.h','lib/lua/luaconf.h','lib/extensions/HTTP/wax_http.h','lib/extensions/json/wax_json.h','lib/extensions/filesystem/wax_filesystem.h'
+#  s.public_header_files = 'lib/wax.h','lib/lua/lua.h','lib/lua/luaconf.h', 'lib/wax_define.h', 'lib/wax_instance.h', 'lib/extensions/HTTP/wax_http.h','lib/extensions/json/wax_json.h','lib/extensions/filesystem/wax_filesystem.h'
 
+  s.source_files  = 'lib/*.{h,m}', 'lib/adaptation/*.{h,m}', 'lib/extensions/block/*.{h,m}', 'lib/extensions/capi/**/*.{h,m,c}', 'lib/extensions/CGAffine/*.{h,m}','lib/extensions/CGContext/*.{h,m}','lib/extensions/filesystem/*.{h,m}' ,'lib/extensions/HTTP/*.{h,m}','lib/extensions/ivar/*.{h,m}','lib/extensions/json/**/**/*.{h,m,c}','lib/extensions/memory/*.{h,m,c}','lib/extensions/SQLite/**/*.{h,m}','lib/extensions/xml/**/*.{h,m}'
+  
+  s.public_header_files = 'lib/wax.h', 'lib/wax_define.h', 'lib/wax_instance.h', 'lib/extensions/HTTP/wax_http.h','lib/extensions/json/wax_json.h','lib/extensions/filesystem/wax_filesystem.h'
+  
   s.library = "xml2","sqlite3"
 
+  s.dependency 'lua_ios'
+  
   s.xcconfig = { 'HEADER_SEARCH_PATHS' => '${SDK_DIR}/usr/include/libxml2' }
 
   s.requires_arc = false

@@ -6,7 +6,7 @@
 
 #import "wax_server.h"
 #import "wax.h"
-#import "lauxlib.h"
+#import <lua_ios/lauxlib.h>
 
 static id gInstance;
 

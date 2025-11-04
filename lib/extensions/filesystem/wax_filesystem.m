@@ -8,8 +8,8 @@
 #import "wax_instance.h"
 #import "wax_helpers.h"
 
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 
 #define TABLE_NAME "wax.filesystem"
 
@@ -262,12 +262,25 @@ static const struct luaL_Reg functions[] = {
     {NULL, NULL}
 };
 
+//int luaopen_wax_filesystem(lua_State *L) {
+//    BEGIN_STACK_MODIFY(L);
+//    
+//    luaL_register(L, TABLE_NAME, functions);    
+//    
+//    END_STACK_MODIFY(L, 0)
+//    
+//    return 1;
+//}
+
 int luaopen_wax_filesystem(lua_State *L) {
     BEGIN_STACK_MODIFY(L);
-    
-    luaL_register(L, TABLE_NAME, functions);    
-    
-    END_STACK_MODIFY(L, 0)
-    
+
+    // Create the module table
+    lua_newtable(L);
+
+    // Register the functions table into the module table
+    luaL_setfuncs(L, functions, 0);
+
+    END_STACK_MODIFY(L, 1);
     return 1;
 }

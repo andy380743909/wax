@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 enum {
     WAX_HTTP_UNKNOWN,

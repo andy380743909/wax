@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 #define WAX_STRUCT_METATABLE_NAME "wax.struct"
 

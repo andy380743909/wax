@@ -10,7 +10,7 @@
 #import "wax_helpers.h"
 #import "wax_instance.h"
 #import "wax_struct.h"
-#import "lauxlib.h"
+#import <lua_ios/lauxlib.h>
 #import "wax_lock.h"
 #import "wax_block.h"
 #import "wax_block_transfer_pool.h"

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <sqlite3.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 
 @interface SQLiteOperation : NSOperation {

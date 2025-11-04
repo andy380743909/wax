@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 id wax_objectFromLuaState(lua_State *L, int index);
 

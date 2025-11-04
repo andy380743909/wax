@@ -12,8 +12,8 @@
 #import "wax_helpers.h"
 #import <CoreGraphics/CoreGraphics.h>
 #import <UIKit/UIKit.h>
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 
 #define METATABLE_NAME "wax.CGContext"
 
@@ -164,7 +164,7 @@ static int fillPath(lua_State *L) {
     CGContextRef c = (CGContextRef)lua_topointer(L, 1);
     CGContextBeginPath(c);
     
-    int indexCount = (int)lua_objlen(L, 2);
+    int indexCount = (int)lua_rawlen(L, 2);
     if (indexCount % 2 != 0) luaL_error(L, "Requires an even number of indexes for points.");
 
     int pointCount = indexCount / 2;
@@ -194,9 +194,9 @@ static int drawLinearGradient(lua_State *L) {
     CGPoint *end = wax_copyToObjc(L, @encode(CGPoint), 3, nil);    
     NSArray *colors = wax_copyToObjc(L, @encode(NSArray *), 4, nil);
     
-    CGFloat *locations = malloc(lua_objlen(L, 5) * sizeof(CGFloat));
+    CGFloat *locations = malloc(lua_rawlen(L, 5) * sizeof(CGFloat));
 
-    for (int i = 0; i < lua_objlen(L, 5); i++) {
+    for (int i = 0; i < lua_rawlen(L, 5); i++) {
         lua_rawgeti(L, 5, i + 1);
         locations[i] = luaL_checknumber(L, -1);
         lua_pop(L, 1);
@@ -239,14 +239,35 @@ static const struct luaL_Reg functions[] = {
     {NULL, NULL}
 };
 
+//int luaopen_wax_CGContext(lua_State *L) {
+//    BEGIN_STACK_MODIFY(L);
+//    
+//    luaL_newmetatable(L, METATABLE_NAME);        
+//    luaL_register(L, NULL, metaFunctions);
+//    luaL_register(L, METATABLE_NAME, functions);    
+//    
+//    END_STACK_MODIFY(L, 0)
+//    
+//    return 1;
+//}
+
 int luaopen_wax_CGContext(lua_State *L) {
     BEGIN_STACK_MODIFY(L);
-    
-    luaL_newmetatable(L, METATABLE_NAME);        
-    luaL_register(L, NULL, metaFunctions);
-    luaL_register(L, METATABLE_NAME, functions);    
-    
-    END_STACK_MODIFY(L, 0)
-    
+
+    // Create the metatable for instances (or userdata) of CGContext
+    luaL_newmetatable(L, METATABLE_NAME);
+
+    // Register metamethods (like __gc, __tostring etc) into the metatable
+    luaL_setfuncs(L, metaFunctions, 0);
+
+    // Create a module table that holds the functions you want to expose
+    lua_newtable(L);
+    luaL_setfuncs(L, functions, 0);
+
+    // Set the module table’s metatable so that metamethods apply if needed
+    luaL_getmetatable(L, METATABLE_NAME);
+    lua_setmetatable(L, -2);
+
+    END_STACK_MODIFY(L, 1);
     return 1;
 }

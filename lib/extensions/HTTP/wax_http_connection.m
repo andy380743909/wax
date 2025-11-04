@@ -8,7 +8,7 @@
 
 #include <CommonCrypto/CommonDigest.h>
 
-#import "lauxlib.h"
+#import <lua_ios/lauxlib.h>
 
 #import "wax_http_connection.h"
 #import "wax_instance.h"

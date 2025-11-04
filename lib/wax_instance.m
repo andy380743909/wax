@@ -12,8 +12,8 @@
 #import "wax.h"
 #import "wax_helpers.h"
 
-#import "lauxlib.h"
-#import "lobject.h"
+#import <lua_ios/lauxlib.h>
+#import <lua_ios/lobject.h>
 #import "wax_config.h"
 static int __index(lua_State *L);
 static int __newindex(lua_State *L);
@@ -58,15 +58,37 @@ static const struct luaL_Reg functions[] = {
     {NULL, NULL}
 };
 
+//int luaopen_wax_instance(lua_State *L) {
+//    BEGIN_STACK_MODIFY(L);
+//    
+//    luaL_newmetatable(L, WAX_INSTANCE_METATABLE_NAME);
+//    luaL_register(L, NULL, metaFunctions);
+//    luaL_register(L, WAX_INSTANCE_METATABLE_NAME, functions);
+//    
+//    END_STACK_MODIFY(L, 0)
+//    
+//    return 1;
+//}
+
 int luaopen_wax_instance(lua_State *L) {
     BEGIN_STACK_MODIFY(L);
-    
+
+    // Create a new metatable for the instance type
     luaL_newmetatable(L, WAX_INSTANCE_METATABLE_NAME);
-    luaL_register(L, NULL, metaFunctions);
-    luaL_register(L, WAX_INSTANCE_METATABLE_NAME, functions);
-    
-    END_STACK_MODIFY(L, 0)
-    
+
+    // Register metamethods / functions in that metatable
+    luaL_setfuncs(L, metaFunctions, 0);
+
+    // Create a module table (or use metatable's table) and register functions
+    lua_newtable(L);
+    luaL_setfuncs(L, functions, 0);
+
+    // Set the module table's metatable to the instance metatable
+    luaL_getmetatable(L, WAX_INSTANCE_METATABLE_NAME);
+    lua_setmetatable(L, -2);
+
+    END_STACK_MODIFY(L, 1);
+
     return 1;
 }
 
@@ -110,7 +132,8 @@ wax_instance_userdata *wax_instance_create(lua_State *L, id instance, BOOL isCla
 
     // give it a nice clean environment
     lua_newtable(L);
-    lua_setfenv(L, -2);
+//    lua_setfenv(L, -2);
+    lua_setuservalue(L, -2);
     
     wax_instance_pushUserdataTable(L);
 
@@ -166,12 +189,14 @@ wax_instance_userdata *wax_instance_createSuper(lua_State *L, wax_instance_userd
         lua_newtable(L); 
     }
     else {
-        lua_getfenv(L, -1);
+//        lua_getfenv(L, -1);
+        lua_getuservalue(L, -1);
         lua_remove(L, -2); // Remove nil and superclass userdata
     }
 
 	// Give it the instance's metatable
-    lua_setfenv(L, -2);
+//    lua_setfenv(L, -2);
+    lua_setuservalue(L, -2);
     
     END_STACK_MODIFY(L, 1)
     
@@ -241,7 +266,8 @@ BOOL wax_instance_pushFunction(lua_State *L, id self, SEL selector) {
 //        NSLog(@"data->waxRetain = YES instance=%@", data->instance);
     }
     
-    lua_getfenv(L, -1);
+//    lua_getfenv(L, -1);
+    lua_getuservalue(L, -1);
     wax_pushMethodNameFromSelector(L, selector);
     lua_rawget(L, -2);
     
@@ -320,7 +346,8 @@ static int __index(lua_State *L) {
     
     // Check instance userdata, unless we are acting like a super
 	if (!instanceUserdata->actAsSuper) {
-		lua_getfenv(L, -2);
+//		lua_getfenv(L, -2);
+        lua_getuservalue(L, -1);
 		lua_pushvalue(L, -2);
 		lua_rawget(L, 3);
 	}
@@ -337,7 +364,8 @@ static int __index(lua_State *L) {
 		
 		// If there is no userdata for this instance's class, then leave the nil on the stack and don't anything else
 		if (!lua_isnil(L, -1)) {
-			lua_getfenv(L, -1);
+//			lua_getfenv(L, -1);
+            lua_getuservalue(L, -1);
 			lua_pushvalue(L, 2);
 			lua_rawget(L, -2);
 			lua_remove(L, -2); // Get rid of the userdata env
@@ -402,7 +430,8 @@ static int __newindex(lua_State *L) {
     }
 
     // Add value to the userdata's environment table.
-    lua_getfenv(L, 1);
+//    lua_getfenv(L, 1);
+    lua_getuservalue(L, -1);
     lua_insert(L, 2);
     lua_rawset(L, 2);
     

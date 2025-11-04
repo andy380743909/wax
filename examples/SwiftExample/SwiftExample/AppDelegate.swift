@@ -17,7 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(application: UIApplication, didFinishLaunchingWithOptions launchOptions: [NSObject: AnyObject]?) -> Bool {
         // Override point for customization after application launch.
         wax_startWithNil();
-        let path:String = NSBundle.mainBundle().pathForResource("TestSwiftVC", ofType: "lua")!;
+        let path:String = Bundle.main.path(forResource: "TestSwiftVC", ofType: "lua")!;
         wax_runLuaFile(path);
         return true
     }

@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 #import <sqlite3.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 #define WAX_SQLITE_METATABLE_NAME "wax.sqlite"
 #define WAX_SQLITE_CALLBACK_NAME "sqlite-callback"

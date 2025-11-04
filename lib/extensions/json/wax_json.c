@@ -1,12 +1,16 @@
 #include "wax_json.h"
 
+//#import "wax_helpers.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <assert.h>
 
-#include "lua.h"
-#include "lauxlib.h"
+//#include "lua.h"
+//#include "lauxlib.h"
+#include <lua_ios/lua.h>
+#include <lua_ios/lauxlib.h>
 
 static int parse(lua_State *L);
 static int generate(lua_State *L);
@@ -21,14 +25,35 @@ static const struct luaL_Reg functions[] = {
     {NULL, NULL}
 };
 
-int luaopen_wax_json(lua_State *L) {    
-    luaL_newmetatable(L, JSON_METATABLE_NAME);        
-    luaL_register(L, NULL, metaFunctions);
-    luaL_register(L, JSON_METATABLE_NAME, functions);    
+//int luaopen_wax_json(lua_State *L) {    
+//    luaL_newmetatable(L, JSON_METATABLE_NAME);        
+//    luaL_register(L, NULL, metaFunctions);
+//    luaL_register(L, JSON_METATABLE_NAME, functions);    
+//    
+//    lua_pop(L, 2); // Remove tables from stack,
+//    
+//    return 0;
+//}
+
+int luaopen_wax_json(lua_State *L) {
     
-    lua_pop(L, 2); // Remove tables from stack,
+
+    // Create the metatable for the JSON userdata (or class)
+    luaL_newmetatable(L, JSON_METATABLE_NAME);
+
+    // Register metamethods into the metatable
+    luaL_setfuncs(L, metaFunctions, 0);
+
+    // Create module table for JSON functions
+    lua_newtable(L);
+    luaL_setfuncs(L, functions, 0);
+
+    // Set module table’s metatable so that the userdata behaviors apply
+    luaL_getmetatable(L, JSON_METATABLE_NAME);
+    lua_setmetatable(L, -2);
+
     
-    return 0;
+    return 1;
 }
 
 #include "yajl/api/yajl_parse.h"
@@ -53,7 +78,7 @@ void push_hash_or_array(lua_State *L) {
             lua_rawset(L, -3);
             break;
         case state_array:
-            lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
+            lua_rawseti(L, -2, lua_rawlen(L, -2) + 1);
             break;
     }
 }

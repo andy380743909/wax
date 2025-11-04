@@ -14,7 +14,7 @@
 #import "wax_block.h"
 #import "wax_define.h"
 #import "wax_block_description.h"
-#import "lauxlib.h"
+#import <lua_ios/lauxlib.h>
 
 void *lua_call_bb(lua_State *L, int index, char typeEncoding){
     char tempTypeEncoding[3] = {0};//at least 3 byte, or wax_simplifyTypeDescription maybe out of bounds

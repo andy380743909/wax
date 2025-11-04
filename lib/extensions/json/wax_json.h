@@ -1,7 +1,7 @@
 #ifndef json_h
 #define json_h
 
-#import "lua.h"
+#include <lua_ios/lua.h>
 
 #define JSON_METATABLE_NAME "wax.json"
 

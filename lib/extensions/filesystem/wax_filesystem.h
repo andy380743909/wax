@@ -4,6 +4,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 int luaopen_wax_filesystem(lua_State *L);

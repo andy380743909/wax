@@ -11,8 +11,8 @@
 #import "wax_instance.h"
 #import "wax_helpers.h"
 
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 #import <CoreGraphics/CoreGraphics.h>
 
 #define METATABLE_NAME "wax.CGTransform"
@@ -73,14 +73,35 @@ static const struct luaL_Reg functions[] = {
     {NULL, NULL}
 };
 
+//int luaopen_wax_CGTransform(lua_State *L) {
+//    BEGIN_STACK_MODIFY(L);
+//    
+//    luaL_newmetatable(L, METATABLE_NAME);        
+//    luaL_register(L, NULL, metaFunctions);
+//    luaL_register(L, METATABLE_NAME, functions);    
+//    
+//    END_STACK_MODIFY(L, 0)
+//    
+//    return 1;
+//}
+
 int luaopen_wax_CGTransform(lua_State *L) {
     BEGIN_STACK_MODIFY(L);
-    
-    luaL_newmetatable(L, METATABLE_NAME);        
-    luaL_register(L, NULL, metaFunctions);
-    luaL_register(L, METATABLE_NAME, functions);    
-    
-    END_STACK_MODIFY(L, 0)
-    
+
+    luaL_newmetatable(L, METATABLE_NAME);
+
+    // Register metamethods for this metatable
+    luaL_setfuncs(L, metaFunctions, 0);
+
+    // Create module table for “functions”
+    lua_newtable(L);
+    luaL_setfuncs(L, functions, 0);
+
+    // Set module’s metatable so module methods fall back to instance metatable
+    luaL_getmetatable(L, METATABLE_NAME);
+    lua_setmetatable(L, -2);
+
+    END_STACK_MODIFY(L, 1);
+
     return 1;
 }

@@ -1,0 +1,22 @@
+PODS:
+  - lua_ios (5.3.4)
+  - wax (1.2.1):
+    - lua_ios
+
+DEPENDENCIES:
+  - lua_ios (from `/Users/andy/Projects/lua_xcframework_pod/lua_ios.podspec`)
+  - wax (from `../../`)
+
+EXTERNAL SOURCES:
+  lua_ios:
+    :path: "/Users/andy/Projects/lua_xcframework_pod/lua_ios.podspec"
+  wax:
+    :path: "../../"
+
+SPEC CHECKSUMS:
+  lua_ios: 119bff11cd4d1b7e2ada6d235acb930b76d8782a
+  wax: 446f78cbeba86562df52d86e9cbc83f41cc287d1
+
+PODFILE CHECKSUM: 6bd9aeacaf247b326b2338e4225f89d6af96f721
+
+COCOAPODS: 1.16.2

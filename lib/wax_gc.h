@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 @interface wax_gc : NSObject {
 

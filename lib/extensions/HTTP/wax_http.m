@@ -11,8 +11,8 @@
 #import "wax_instance.h"
 #import "wax_helpers.h"
 
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 
 const NSTimeInterval WAX_HTTP_TIMEOUT = 30;
 
@@ -36,19 +36,40 @@ static const struct luaL_Reg functions[] = {
     {NULL, NULL}
 };
 
+//int luaopen_wax_http(lua_State *L) {
+//    BEGIN_STACK_MODIFY(L);
+//    
+//    luaL_newmetatable(L, WAX_HTTP_METATABLE_NAME);        
+//    luaL_register(L, NULL, metaFunctions);
+//    luaL_register(L, WAX_HTTP_METATABLE_NAME, functions);    
+//    
+//    lua_pushvalue(L, -2);
+//    lua_setmetatable(L, -2); // Set the metatable for the module
+//    
+//    END_STACK_MODIFY(L, 0)
+//    
+//    return 0;
+//}
+
 int luaopen_wax_http(lua_State *L) {
     BEGIN_STACK_MODIFY(L);
-    
-    luaL_newmetatable(L, WAX_HTTP_METATABLE_NAME);        
-    luaL_register(L, NULL, metaFunctions);
-    luaL_register(L, WAX_HTTP_METATABLE_NAME, functions);    
-    
-    lua_pushvalue(L, -2);
-    lua_setmetatable(L, -2); // Set the metatable for the module
-    
-    END_STACK_MODIFY(L, 0)
-    
-    return 0;
+
+    // Create the metatable for HTTP objects / userdata
+    luaL_newmetatable(L, WAX_HTTP_METATABLE_NAME);
+
+    // Register metamethods for the metatable
+    luaL_setfuncs(L, metaFunctions, 0);
+
+    // Create the module table (functions exposed to Lua)
+    lua_newtable(L);
+    luaL_setfuncs(L, functions, 0);
+
+    // Set the module table’s metatable to the HTTP metatable
+    luaL_getmetatable(L, WAX_HTTP_METATABLE_NAME);
+    lua_setmetatable(L, -2);
+
+    END_STACK_MODIFY(L, 1);
+    return 1;
 }
 
 // wax.request({url, options}) => returns connection object or (body, response) if syncronous

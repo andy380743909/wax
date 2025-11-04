@@ -7,7 +7,7 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "lua.h"
+#import <lua_ios/lua.h>
 
 #define WAX_HTTP_METATABLE_NAME "wax.http"
 

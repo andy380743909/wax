@@ -9,8 +9,8 @@
 #import "wax_struct.h"
 #import "wax_helpers.h"
 
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lauxlib.h>
 
 #define LABELED_STRUCT_TABLE_NAME "labeledStructs"
 
@@ -42,20 +42,48 @@ static const struct luaL_Reg functions[] = {
 {NULL, NULL}
 };
 
+//int luaopen_wax_struct(lua_State *L) {
+//    BEGIN_STACK_MODIFY(L);
+//    
+//    luaL_newmetatable(L, WAX_STRUCT_METATABLE_NAME);
+//    
+//    luaL_register(L, NULL, metaFunctions);
+//    luaL_register(L, WAX_STRUCT_METATABLE_NAME, functions);    
+//
+//    // metatable stores all the labeled structs and their mappings
+//    luaL_getmetatable(L, WAX_STRUCT_METATABLE_NAME);    
+//    lua_newtable(L);
+//    lua_setfield(L, -2, LABELED_STRUCT_TABLE_NAME);
+//    
+//    END_STACK_MODIFY(L, 0);
+//    return 1;
+//}
+
 int luaopen_wax_struct(lua_State *L) {
     BEGIN_STACK_MODIFY(L);
-    
-    luaL_newmetatable(L, WAX_STRUCT_METATABLE_NAME);
-    
-    luaL_register(L, NULL, metaFunctions);
-    luaL_register(L, WAX_STRUCT_METATABLE_NAME, functions);    
 
-    // metatable stores all the labeled structs and their mappings
-    luaL_getmetatable(L, WAX_STRUCT_METATABLE_NAME);    
+    // Create metatable for struct objects
+    luaL_newmetatable(L, WAX_STRUCT_METATABLE_NAME);
+
+    // Register metamethods (metaFunctions) into the metatable
+    luaL_setfuncs(L, metaFunctions, 0);
+
+    // Create module table to return
+    lua_newtable(L);
+    // Register module functions into this table
+    luaL_setfuncs(L, functions, 0);
+
+    // Make the module table’s metatable the struct metatable
+    luaL_getmetatable(L, WAX_STRUCT_METATABLE_NAME);
+    lua_setmetatable(L, -2);
+
+    // Now within the struct metatable store a table for labeled structs
+    // (as per your original intent)
+    luaL_getmetatable(L, WAX_STRUCT_METATABLE_NAME);
     lua_newtable(L);
     lua_setfield(L, -2, LABELED_STRUCT_TABLE_NAME);
-    
-    END_STACK_MODIFY(L, 0);
+
+    END_STACK_MODIFY(L, 1);  // leave module table on stack
     return 1;
 }
 
@@ -90,8 +118,11 @@ wax_struct_userdata *wax_struct_create(lua_State *L, const char *typeDescription
     lua_setmetatable(L, -2);
     
     // give it a nice clean environment
-    lua_newtable(L); 
-    lua_setfenv(L, -2);
+//    lua_newtable(L); 
+//    lua_setfenv(L, -2);
+    // give it a fresh “user value” table instead of old environment
+        lua_newtable(L);
+        lua_setuservalue(L, -2);
     
     END_STACK_MODIFY(L, 1)
     
@@ -311,7 +342,14 @@ static int pack(lua_State *L) {
     }
     luaL_pushresult(&b);
     
-    wax_struct_create(L, typeDescription, b.buffer);
+//    wax_struct_create(L, typeDescription, b.buffer);
+    size_t resultLen = 0;
+    const char *resultStr = lua_tolstring(L, -1, &resultLen);
+    if (!resultStr) {
+        luaL_error(L, "Error creating packed struct string");
+    }
+    
+    wax_struct_create(L, typeDescription, (void *)resultStr);
     
     return 1;
 }

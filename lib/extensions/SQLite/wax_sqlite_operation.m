@@ -10,8 +10,9 @@
 #import "wax_sqlite.h"
 
 #import <sqlite3.h>
-#import "lua.h"
-#import "lauxlib.h"
+#import <lua_ios/lua.h>
+#import <lua_ios/lualib.h>
+#import <lua_ios/lauxlib.h>
 
 #import "wax_helpers.h"
 
@@ -31,12 +32,24 @@ static void sqlite_push_column_value(sqlite3_stmt *statement, int columnIndex);
 
 // SQLite calls use their own lua state to build up the response (because wax can't currently handle lua threads)
 // I want to just create a subthread, but can't because of the way I hacked the Lua GC
-+ (lua_State *)operationLuaState {
-    static lua_State *L;
-    if (!L) L = lua_open();
+//+ (lua_State *)operationLuaState {
+//    static lua_State *L;
+//    if (!L) L = lua_open();
+//
+//    return L;
+//}
 
++ (lua_State *)operationLuaState {
+    static lua_State *L = NULL;
+    if (!L) {
+        L = luaL_newstate();
+        if (L) {
+            luaL_openlibs(L);
+        }
+    }
     return L;
 }
+
 
 - (void)dealloc {
     [_sqlString release];
@@ -82,7 +95,7 @@ static void sqlite_push_column_value(sqlite3_stmt *statement, int columnIndex);
                 lua_rawset(L, -3); // Add the column
             }
             
-            lua_rawseti(L, -2, lua_objlen(L, -2) + 1); // Add the row
+            lua_rawseti(L, -2, lua_rawlen(L, -2) + 1); // Add the row
         }
         
         int finalizeResult = sqlite3_finalize(statement);
@@ -146,7 +159,8 @@ static void sqlite_push_column_value(sqlite3_stmt *statement, int columnIndex);
     
     // If a callback exists, call it!
     wax_instance_pushUserdata(L, self);
-    lua_getfenv(L, -1); // get env
+//    lua_getfenv(L, -1); // get env
+    lua_getuservalue(L, -1);
     lua_getfield(L, -1, WAX_SQLITE_CALLBACK_NAME);
         
     bool hasCallback = !lua_isnil(L, -1);
